@@ -1,8 +1,46 @@
 package com.company;
 
-class MatrixThreads {
+class MatrixThreads implements Runnable {
 
+    int start;
+    int stop;
+    int a[][];
+    int b[][];
+    int d[][];
+
+    public MatrixThreads(int[][] _a, int[][] _b, int[][] _d, int _start, int _stop){
+        this.start = _start;
+        this.stop = _stop;
+        this.a = _a;
+        this.b = _b;
+        this.d = _d;
+
+    }
+
+    @Override
+    public void run() {
+
+        int size = 1000;
+        for(int i = start;  i < stop; i++ ){
+            for(int j = 0; j < size; j ++){
+                for(int k = 0; k < size; k++){
+                    d[i][j] = d[i][j] + (a[i][k] * b[k][j]);
+                }
+            }
+        }
+    }
 }
+
+class MatrixThreads2 implements Runnable{
+
+    @Override
+    public void run() {
+
+
+    }
+}
+
+
 
 public class Main {
 
@@ -47,10 +85,18 @@ public class Main {
         return true;
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args)  {
         int size = 1000;
+
+
+
+
         int a[][] = new int[size][size];
         int b[][] = new int[size][size];
+
+
+
+
         for (int i = 0; i < size; i++) {
             for (int j = 0; j < size; j++) {
                 a[i][j] = getRand(1, 1000);
@@ -66,7 +112,23 @@ public class Main {
         startTime = System.nanoTime();
         // filler, make either a new class that extends thread, or have this one extend thread
         // figure out how to split work up into at least 2 more threads
-        int d[][] = multiplyParallel(a, b);
+        int d[][] = new int[size][size];
+        MatrixThreads work1 = new MatrixThreads( a, b, d, 0, 500);
+        MatrixThreads work2 = new MatrixThreads( a, b, d, 500, 1000);
+        Thread thread1 = new Thread(work1);
+        Thread thread2 = new Thread(work2);
+
+        thread1.start();
+        thread2.start();
+
+        try {
+            thread1.join();
+            thread2.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+
         endTime = System.nanoTime();
         long parallelTime = endTime - startTime;
         System.out.println("Parallel Time " + parallelTime + " ns");
